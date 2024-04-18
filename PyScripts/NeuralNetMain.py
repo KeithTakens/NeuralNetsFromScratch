@@ -1,6 +1,6 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 
 def generate_polynomial(a, b, c, d, e):
@@ -9,8 +9,8 @@ def generate_polynomial(a, b, c, d, e):
     return x,y
 
 # Function to generate noisy data and plot with the polynomial
-def generate_noisy_data(a, b, c, d, e, noise_level):
-    x_original = np.linspace(-10, 10, 500)
+def generate_noisy_data(a, b, c, d, e, noise_level, ammountOfPoints):
+    x_original = np.linspace(-10, 10, ammountOfPoints)
     y_original = a*x_original**4 + b*x_original**3 + c*x_original**2 + d*x_original + e
     y_noisy = y_original + np.random.normal(0,noise_level,x_original.size)
 
@@ -28,10 +28,41 @@ def displayData(dataX,dataY,PlotLineX=0,PlotLineY=1):
     plt.show()
 
 def save_to_csv(x,y, filename):
-    data = {'X': x, 'Y': y}
-    df = pd.DataFrame(data)
-    df.to_csv(filename, index=False)
+
+    csv_string = "X,Y\n"
+
+    for xi, yi in zip(x, y):
+        csv_string += f"{xi},{yi}\n"
+
+    with open(filename, 'w') as file:
+        file.write(csv_string)
 
 def load_from_csv(filename):
-    df = pd.read_csv(filename)
-    return df
+    # Initialize empty lists to store the x and y values
+    x = []
+    y = []
+    
+    with open(filename, 'r') as file:
+        # Skip the header
+        next(file)
+        
+        # Read each subsequent line
+        for line in file:
+            values = line.strip().split(',')
+            if len(values) == 2:  # Ensure there are exactly two columns
+                x.append(float(values[0]))
+                y.append(float(values[1]))
+
+    return x, y
+
+
+
+def checkLoss(a,b,c,d,e,dataX,dataY):
+    L = []
+    for valX,valY in zip(dataX,dataY):
+
+        correctValue = a*valX**4 + b*valX**3 + c*valX**2 + d*valX + e
+        Dist = abs(correctValue-valY)
+        L.append(Dist)
+
+    return(sum(L)/len(L))
